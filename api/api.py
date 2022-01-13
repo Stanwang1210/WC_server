@@ -345,34 +345,55 @@ def representWrapper(req, trx_id = 0):
     #-------------------------------------
     #retrieve images from request
 
-    img = ""
+    # img = ""
+    # if "img" in list(req.keys()):
+    #     img = req["img"] #list
+    #     #print("img: ", img)
+
+    # validate_img = False
+    # if len(img) > 11 and img[0:11] == "data:image/":
+    #     validate_img = True
+
+    # if validate_img != True:
+    #     print("invalid image passed!")
+    #     return jsonify({'success': False, 'error': 'you must pass img as base64 encoded string'}), 205
+    instances = []
     if "img" in list(req.keys()):
-        img = req["img"] #list
-        #print("img: ", img)
+        raw_content = req["img"] #list
+        # print(raw_content)
+        for item in raw_content: #item is in type of dict
+            # instance = []
+            img1 = item["img1"]
 
-    validate_img = False
-    if len(img) > 11 and img[0:11] == "data:image/":
-        validate_img = True
+            validate_img1 = False
+            if len(img1) > 11 and img1[0:11] == "data:image/":
+                validate_img1 = True
 
-    if validate_img != True:
-        print("invalid image passed!")
-        return jsonify({'success': False, 'error': 'you must pass img as base64 encoded string'}), 205
+        # exit(0)    
+            if validate_img1 != True :
+                return jsonify({'success': False, 'error': 'you must pass both img1 and img2 as base64 encoded string'}), 205
+
+            # instance.append(img1)
+            instances.append(img1)
 
     #-------------------------------------
     #call represent function from the interface
 
-    try:
+    for i, img in enumerate(instances):
+        try:
+            # print(type(img))
+            resp_obj = {}
+            embedding = DeepFace.represent(img
+                , model_name = model_name
+                , detector_backend = detector_backend
+            )
+            resp_obj[f"embedding"] = embedding
+            break
 
-        embedding = DeepFace.represent(img
-            , model_name = model_name
-            , detector_backend = detector_backend
-        )
-        resp_obj = {}
-        resp_obj["embedding"] = embedding
-
-    except Exception as err:
+        except Exception as err:
         # print("Exception: ",str(err))
-        resp_obj = jsonify({'success': False, 'error': str(err)}), 205
+            resp_obj = jsonify({'success': False, 'error': str(err)}), 205
+            continue
 
     #-------------------------------------
 
@@ -384,7 +405,7 @@ def representWrapper(req, trx_id = 0):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     
-    
+    # exit(0)
     parser.add_argument(
         '-p', '--port',
         type=int,
